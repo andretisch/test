@@ -98,12 +98,7 @@ python -m src.main --config config/default.yaml
 
 ### Docker
 
-Нужен `data/test_video.mp4`. Доступ к демону (один раз после `apt install docker.io`):
-
-```bash
-sudo usermod -aG docker "$USER"
-# перелогиньтесь или: newgrp docker
-```
+Нужен `data/test_video.mp4`. 
 
 Сборка и smoke:
 
