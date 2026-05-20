@@ -1,0 +1,21 @@
+source_video: data/test_video.mp4
+target_video: output/result.mp4
+model_path: models/yolov8n.onnx
+confidence: 0.25
+iou: 0.45
+imgsz: 640
+vehicle_class_ids: [2, 3, 5, 7]
+line:
+  start: [1262, 279]
+  end: [12, 113]
+labels:
+  in: "к камере"
+  out: "от камеры"
+# Меняет местами in/out supervision (если «к камере» считает уезжающих)
+swap_directions: true
+annotators:
+  box_thickness: 4
+  trace_length: 30
+gradio:
+  server_name: "0.0.0.0"
+  server_port: 7860

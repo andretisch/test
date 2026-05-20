@@ -1,0 +1,22 @@
+services:
+  app:
+    build: .
+    ports:
+      - "7860:7860"
+    volumes:
+      - ./storage:/app/storage
+      - ./models:/app/models
+      - ./config:/app/config
+      - ./data:/app/data
+      - ./output:/app/output
+    command: python src/app.py
+
+  smoke:
+    build: .
+    profiles: ["test"]
+    volumes:
+      - ./models:/app/models
+      - ./config:/app/config
+      - ./data:/app/data
+      - ./output:/app/output
+    command: python scripts/validate_smoke.py

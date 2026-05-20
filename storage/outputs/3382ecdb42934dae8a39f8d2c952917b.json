@@ -1,0 +1,19 @@
+{
+  "in_count": 20,
+  "out_count": 23,
+  "labels": {
+    "in": "к камере",
+    "out": "от камеры"
+  },
+  "line": {
+    "start": [
+      1262,
+      279
+    ],
+    "end": [
+      12,
+      113
+    ]
+  },
+  "swap_directions": true
+}
