@@ -57,6 +57,8 @@ pip install -r requirements.txt
 python scripts/export_onnx.py
 ```
 
+## Запуск приложения
+
 ### Gradio UI (основной способ)
 
 ```bash
