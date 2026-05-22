@@ -8,7 +8,7 @@
 
 | Компонент | Библиотека | Назначение |
 |-----------|------------|------------|
-| Детекция | [Ultralytics YOLOv8n](https://docs.ultralytics.com/integrations/onnx/) в формате **ONNX**, `imgsz: 1280` | Bounding box транспортных средств на CPU |
+| Детекция | [Ultralytics YOLOv8n](https://docs.ultralytics.com/integrations/onnx/) в формате **ONNX**, `imgsz: 640` | Bounding box транспортных средств на CPU |
 | Инференс | [ONNX Runtime](https://onnxruntime.ai/) | Ускорение инференса без GPU |
 | Трекинг | [supervision](https://supervision.roboflow.com/) `ByteTrack` | Стабильные ID объектов между кадрами |
 | Подсчёт | `sv.LineZone` | Пересечение линии: «к камере» / «от камеры» |
