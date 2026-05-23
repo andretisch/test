@@ -23,7 +23,7 @@ class VTDNetDetector:
     def __init__(
         self,
         onnx_path: Path | str,
-        conf: float = 0.25,
+        conf: float = 0.03,
         iou: float = 0.45,
         imgsz: int = IMGSZ,
     ) -> None:
@@ -68,8 +68,19 @@ class VTDNetDetector:
         xyxy[:, [0, 2]] *= w
         xyxy[:, [1, 3]] *= h
 
+        # Отсекаем мелкий шум (<0.05% площади кадра)
+        areas = (xyxy[:, 2] - xyxy[:, 0]) * (xyxy[:, 3] - xyxy[:, 1])
+        min_area = w * h * 0.0005
+        keep = areas >= min_area
+        xyxy = xyxy[keep]
+        scores = det[:, 4][keep]
+        classes = det[:, 5][keep].astype(int)
+
+        if len(xyxy) == 0:
+            return sv.Detections.empty()
+
         return sv.Detections(
             xyxy=xyxy,
-            confidence=det[:, 4],
-            class_id=det[:, 5].astype(int),
+            confidence=scores,
+            class_id=classes,
         )

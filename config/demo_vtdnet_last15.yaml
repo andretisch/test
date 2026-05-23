@@ -2,6 +2,8 @@ source_video: data/last_15s.mp4
 target_video: output/demo_last15_vtdnet.mp4
 model_backend: vtdnet
 model_path: models/vtdnet_640.onnx
+# VTDNet даёт низкий objectness (~0.15–0.25); 0.25 отсекает почти всё
+vtdnet_confidence: 0.03
 confidence: 0.25
 iou: 0.45
 imgsz: 640

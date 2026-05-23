@@ -44,6 +44,7 @@ class AppConfig:
     model_backend: str = "yolo"  # yolo | vtdnet
     model_path: str = "models/yolov8s.onnx"
     confidence: float = 0.25
+    vtdnet_confidence: float = 0.06
     iou: float = 0.45
     imgsz: int = 1280
     vehicle_class_ids: list[int] = field(default_factory=lambda: [2, 3, 5, 7])
@@ -79,6 +80,7 @@ def load_config(path: Path | str | None = None) -> AppConfig:
         model_backend=str(raw.get("model_backend", "yolo")).lower(),
         model_path=raw.get("model_path", "models/yolov8s.onnx"),
         confidence=float(raw.get("confidence", 0.25)),
+        vtdnet_confidence=float(raw.get("vtdnet_confidence", raw.get("confidence", 0.06))),
         iou=float(raw.get("iou", 0.45)),
         imgsz=int(raw.get("imgsz", 1280)),
         vehicle_class_ids=list(raw.get("vehicle_class_ids", [2, 3, 5, 7])),

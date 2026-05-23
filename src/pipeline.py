@@ -34,7 +34,7 @@ class VehicleCounterPipeline:
             onnx_path = config.resolve_path(config.model_path)
             self.vtdnet = VTDNetDetector(
                 onnx_path,
-                conf=config.confidence,
+                conf=config.vtdnet_confidence,
                 iou=config.iou,
                 imgsz=config.imgsz,
             )
