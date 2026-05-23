@@ -7,7 +7,8 @@ __pycache__/
 # Крупные веса и ролики (не в git)
 *.pt
 !models/vtdnet_640.pt
-data/
+data/*
+!data/last_15s.mp4
 *.mp4
 *.avi
 *.mkv
@@ -24,6 +25,10 @@ models/vehicles_*
 models/yolov8*
 *.onnx
 !models/vtdnet_640.onnx
+
+# Демо-результаты VTDNet (последние 15 с)
+!output/demo_last15_vtdnet.mp4
+!output/demo_last15_vtdnet.json
 
 # Прогоны обучения (кроме сводок)
 Train/runs/**/*

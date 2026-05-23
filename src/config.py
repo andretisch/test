@@ -41,6 +41,7 @@ class GradioConfig:
 class AppConfig:
     source_video: str = "data/test_video.mp4"
     target_video: str = "output/result.mp4"
+    model_backend: str = "yolo"  # yolo | vtdnet
     model_path: str = "models/yolov8s.onnx"
     confidence: float = 0.25
     iou: float = 0.45
@@ -75,6 +76,7 @@ def load_config(path: Path | str | None = None) -> AppConfig:
     return AppConfig(
         source_video=raw.get("source_video", "data/test_video.mp4"),
         target_video=raw.get("target_video", "output/result.mp4"),
+        model_backend=str(raw.get("model_backend", "yolo")).lower(),
         model_path=raw.get("model_path", "models/yolov8s.onnx"),
         confidence=float(raw.get("confidence", 0.25)),
         iou=float(raw.get("iou", 0.45)),

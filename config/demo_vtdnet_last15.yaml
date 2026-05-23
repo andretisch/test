@@ -1,0 +1,18 @@
+source_video: data/last_15s.mp4
+target_video: output/demo_last15_vtdnet.mp4
+model_backend: vtdnet
+model_path: models/vtdnet_640.onnx
+confidence: 0.25
+iou: 0.45
+imgsz: 640
+vehicle_class_ids: [0, 1, 2, 3]
+line:
+  start: [1262, 279]
+  end: [12, 113]
+labels:
+  in: "к камере"
+  out: "от камеры"
+swap_directions: true
+annotators:
+  box_thickness: 4
+  trace_length: 30

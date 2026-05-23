@@ -12,6 +12,7 @@ from ultralytics import YOLO
 from src.config import AppConfig, load_config
 from src.cyrillic_draw import draw_line_zone_labels
 from src.model_loader import ensure_onnx_model
+from src.vtdnet_detector import VTDNetDetector
 
 
 @dataclass
@@ -24,10 +25,25 @@ class JobResult:
 class VehicleCounterPipeline:
     def __init__(self, config: AppConfig) -> None:
         self.config = config
-        model_path = ensure_onnx_model(config)
-        self.model = YOLO(str(model_path), task="detect")
+        self._use_vtdnet = config.model_backend == "vtdnet" or "vtdnet" in config.model_path.lower()
+        self.model = None
+        self.vtdnet: VTDNetDetector | None = None
+        self._class_names: dict[int, str] = {}
+
+        if self._use_vtdnet:
+            onnx_path = config.resolve_path(config.model_path)
+            self.vtdnet = VTDNetDetector(
+                onnx_path,
+                conf=config.confidence,
+                iou=config.iou,
+                imgsz=config.imgsz,
+            )
+            self._class_names = dict(self.vtdnet.names)
+        else:
+            model_path = ensure_onnx_model(config)
+            self.model = YOLO(str(model_path), task="detect")
+
         self.tracker = sv.ByteTrack()
-        self._class_names: dict[int, str] | None = None
 
     @classmethod
     def load(cls, config_path: Path | str | None = None) -> VehicleCounterPipeline:
@@ -104,15 +120,20 @@ class VehicleCounterPipeline:
             nonlocal frame_index
             frame_index = index
 
-            results = self.model(
-                frame,
-                verbose=False,
-                conf=self.config.confidence,
-                iou=self.config.iou,
-                imgsz=self.config.imgsz,
-                device="cpu",
-            )[0]
-            detections = sv.Detections.from_ultralytics(results)
+            if self.vtdnet is not None:
+                detections = self.vtdnet.predict(frame)
+            else:
+                results = self.model(
+                    frame,
+                    verbose=False,
+                    conf=self.config.confidence,
+                    iou=self.config.iou,
+                    imgsz=self.config.imgsz,
+                    device="cpu",
+                )[0]
+                detections = sv.Detections.from_ultralytics(results)
+                self._class_names = dict(results.names)
+
             detections = self._filter_vehicles(detections)
             detections = self.tracker.update_with_detections(detections)
 
@@ -122,7 +143,7 @@ class VehicleCounterPipeline:
                 detections.class_id,
                 detections.tracker_id,
             ):
-                name = results.names[int(class_id)]
+                name = self._class_names.get(int(class_id), str(int(class_id)))
                 labels.append(f"#{tracker_id} {name} {conf:.2f}")
 
             annotated = frame.copy()
