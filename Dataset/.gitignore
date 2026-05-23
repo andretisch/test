@@ -1,4 +1,4 @@
-# Сгенерированные данные (создаёт Train/create_dataset.py)
-images/
-labels/
+# Логи сборки датасета
 build_frame5.log
+build_all_frames.log
+*.cache

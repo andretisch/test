@@ -13,10 +13,7 @@ data/*
 *.avi
 *.mkv
 
-# Датасет: только конфиги в репозитории, картинки локально
-Dataset/images/
-Dataset/labels/
-Dataset/build_frame5.log
+# Датасет: images/labels в репозитории; логи сборки — в Dataset/.gitignore
 
 # ONNX: в git только компактный VTDNet; остальное — локально
 models/*.onnx.data
