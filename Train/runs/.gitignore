@@ -1,3 +1,5 @@
 *
 !.gitignore
 !**/train_summary.json
+!**/history.json
+!**/history.csv
