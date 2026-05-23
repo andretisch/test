@@ -33,9 +33,9 @@
     "truck"
   ],
   "nc": 4,
-  "opset": 12,
+  "opset": 18,
   "dynamic": false,
   "postprocess": "sigmoid + decode_predictions + NMS (Train/vtdnet/decode.py)",
   "rockchip_notes": "Конвертация RKNN: статический вход 640. NMS рекомендуется на ARM CPU после NPU-инференса.",
-  "weights": "/workspace/Train/runs/vtdnet_quick/weights/best.pt"
+  "weights": "/workspace/Train/runs/vtdnet/weights/best.pt"
 }

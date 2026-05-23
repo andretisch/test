@@ -1,0 +1,21 @@
+{
+  "architecture": "VTDNet",
+  "epochs_run": 80,
+  "multiscale_train": [
+    512,
+    768
+  ],
+  "val_imgsz": 640,
+  "class_names": [
+    "car",
+    "motorcycle",
+    "bus",
+    "truck"
+  ],
+  "best_val_loss": 0.9455459926809583,
+  "best_weights": "/workspace/Train/runs/vtdnet/weights/best.pt",
+  "history_json": "/workspace/Train/runs/vtdnet/history.json",
+  "history_csv": "/workspace/Train/runs/vtdnet/history.csv",
+  "models_pt": "/workspace/models/vtdnet_640.pt",
+  "onnx": "/workspace/models/vtdnet_640.onnx"
+}

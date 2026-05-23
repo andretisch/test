@@ -19,6 +19,7 @@ Dataset/build_frame5.log
 
 # ONNX: в git только компактный VTDNet; остальное — локально
 models/*.onnx.data
+!models/vtdnet_640.onnx.data
 models/vehicles_*
 models/yolov8*
 *.onnx
