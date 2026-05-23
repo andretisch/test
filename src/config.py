@@ -38,6 +38,17 @@ class GradioConfig:
 
 
 @dataclass
+class TrackerConfig:
+    """Параметры ByteTrack (supervision)."""
+
+    track_activation_threshold: float = 0.25
+    lost_track_buffer: int = 30
+    minimum_matching_threshold: float = 0.8
+    frame_rate: float = 30.0
+    minimum_consecutive_frames: int = 1
+
+
+@dataclass
 class AppConfig:
     source_video: str = "data/test_video.mp4"
     target_video: str = "output/result.mp4"
@@ -53,10 +64,30 @@ class AppConfig:
     swap_directions: bool = True
     annotators: AnnotatorConfig = field(default_factory=AnnotatorConfig)
     gradio: GradioConfig = field(default_factory=GradioConfig)
+    tracker: TrackerConfig = field(default_factory=TrackerConfig)
+    vtdnet_tracker: TrackerConfig | None = None
 
     def resolve_path(self, path: str) -> Path:
         p = Path(path)
         return p if p.is_absolute() else ROOT / p
+
+
+def _parse_tracker(data: dict[str, Any] | None, defaults: TrackerConfig) -> TrackerConfig:
+    if not data:
+        return defaults
+    return TrackerConfig(
+        track_activation_threshold=float(
+            data.get("track_activation_threshold", defaults.track_activation_threshold)
+        ),
+        lost_track_buffer=int(data.get("lost_track_buffer", defaults.lost_track_buffer)),
+        minimum_matching_threshold=float(
+            data.get("minimum_matching_threshold", defaults.minimum_matching_threshold)
+        ),
+        frame_rate=float(data.get("frame_rate", defaults.frame_rate)),
+        minimum_consecutive_frames=int(
+            data.get("minimum_consecutive_frames", defaults.minimum_consecutive_frames)
+        ),
+    )
 
 
 def _parse_line(data: dict[str, Any]) -> LineConfig:
@@ -73,6 +104,14 @@ def load_config(path: Path | str | None = None) -> AppConfig:
     labels_raw = raw.get("labels", {})
     annot_raw = raw.get("annotators", {})
     gradio_raw = raw.get("gradio", {})
+    default_tracker = TrackerConfig()
+    vtdnet_tracker_default = TrackerConfig(
+        track_activation_threshold=0.05,
+        lost_track_buffer=90,
+        minimum_matching_threshold=0.5,
+        frame_rate=10.0,
+        minimum_consecutive_frames=1,
+    )
 
     return AppConfig(
         source_video=raw.get("source_video", "data/test_video.mp4"),
@@ -100,5 +139,10 @@ def load_config(path: Path | str | None = None) -> AppConfig:
         gradio=GradioConfig(
             server_name=str(gradio_raw.get("server_name", "0.0.0.0")),
             server_port=int(gradio_raw.get("server_port", 7860)),
+        ),
+        tracker=_parse_tracker(raw.get("tracker"), default_tracker),
+        vtdnet_tracker=_parse_tracker(
+            raw.get("vtdnet_tracker"),
+            vtdnet_tracker_default,
         ),
     )

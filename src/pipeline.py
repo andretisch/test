@@ -9,7 +9,7 @@ import numpy as np
 import supervision as sv
 from ultralytics import YOLO
 
-from src.config import AppConfig, load_config
+from src.config import AppConfig, TrackerConfig, load_config
 from src.cyrillic_draw import draw_line_zone_labels
 from src.model_loader import ensure_onnx_model
 from src.vtdnet_detector import VTDNetDetector
@@ -43,11 +43,23 @@ class VehicleCounterPipeline:
             model_path = ensure_onnx_model(config)
             self.model = YOLO(str(model_path), task="detect")
 
-        self.tracker = sv.ByteTrack()
+        tracker_cfg = config.tracker
+        if self._use_vtdnet and config.vtdnet_tracker is not None:
+            tracker_cfg = config.vtdnet_tracker
+        self.tracker = self._make_tracker(tracker_cfg)
 
     @classmethod
     def load(cls, config_path: Path | str | None = None) -> VehicleCounterPipeline:
         return cls(load_config(config_path))
+
+    def _make_tracker(self, tracker_cfg: TrackerConfig) -> sv.ByteTrack:
+        return sv.ByteTrack(
+            track_activation_threshold=tracker_cfg.track_activation_threshold,
+            lost_track_buffer=tracker_cfg.lost_track_buffer,
+            minimum_matching_threshold=tracker_cfg.minimum_matching_threshold,
+            frame_rate=tracker_cfg.frame_rate,
+            minimum_consecutive_frames=tracker_cfg.minimum_consecutive_frames,
+        )
 
     def _filter_vehicles(self, detections: sv.Detections) -> sv.Detections:
         if len(detections) == 0:
@@ -103,7 +115,10 @@ class VehicleCounterPipeline:
         if swap_directions:
             line_start, line_end = line_end, line_start
 
-        self.tracker = sv.ByteTrack()
+        tracker_cfg = self.config.tracker
+        if self._use_vtdnet and self.config.vtdnet_tracker is not None:
+            tracker_cfg = self.config.vtdnet_tracker
+        self.tracker = self._make_tracker(tracker_cfg)
         self.tracker.reset()
 
         line_zone = sv.LineZone(

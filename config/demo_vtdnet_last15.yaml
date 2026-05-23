@@ -6,6 +6,12 @@ model_path: models/vtdnet_640.onnx
 vtdnet_confidence: 0.03
 confidence: 0.25
 iou: 0.45
+# ByteTrack: для VTDNet conf низкий (~0.1–0.2), порог активации трека тоже ниже
+vtdnet_tracker:
+  track_activation_threshold: 0.05
+  minimum_matching_threshold: 0.5
+  lost_track_buffer: 90
+  frame_rate: 10
 imgsz: 640
 vehicle_class_ids: [0, 1, 2, 3]
 line:
