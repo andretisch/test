@@ -6,6 +6,7 @@ __pycache__/
 
 # Крупные веса и ролики (не в git)
 *.pt
+!models/vtdnet_640.pt
 data/
 *.mp4
 *.avi
@@ -27,4 +28,6 @@ models/yolov8*
 Train/runs/**/*
 !Train/runs/.gitignore
 !Train/runs/**/train_summary.json
+!Train/runs/**/history.json
+!Train/runs/**/history.csv
 Train/smoke_train.log

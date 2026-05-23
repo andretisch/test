@@ -8,6 +8,14 @@ ROOT = Path(__file__).resolve().parent.parent
 
 IMGSZ = 640
 
+# Multi-scale training (как в YOLO: случайный размер батча, кратный 32)
+MULTISCALE_MIN = 512
+MULTISCALE_MAX = 768
+MULTISCALE_STEP = 32
+MULTISCALE_BASE = 768  # загрузка кадров с запасом для upscale в диапазоне
+
+DEFAULT_MODELS_PT = ROOT / "models" / "vtdnet_640.pt"
+
 # PyTorch 2.x экспортирует стабильнее с opset 18; RKNN Toolkit 2.x обычно принимает
 ONNX_OPSET = 18
 ONNX_BATCH = 1
