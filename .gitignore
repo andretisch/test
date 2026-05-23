@@ -1,0 +1,30 @@
+.venv/
+__pycache__/
+*.py[cod]
+.Python
+*.log
+
+# Крупные веса и ролики (не в git)
+*.pt
+data/
+*.mp4
+*.avi
+*.mkv
+
+# Датасет: только конфиги в репозитории, картинки локально
+Dataset/images/
+Dataset/labels/
+Dataset/build_frame5.log
+
+# ONNX: в git только компактный VTDNet; остальное — локально
+models/*.onnx.data
+models/vehicles_*
+models/yolov8*
+*.onnx
+!models/vtdnet_640.onnx
+
+# Прогоны обучения (кроме сводок)
+Train/runs/**/*
+!Train/runs/.gitignore
+!Train/runs/**/train_summary.json
+Train/smoke_train.log

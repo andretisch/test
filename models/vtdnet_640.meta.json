@@ -1,0 +1,41 @@
+{
+  "architecture": "VTDNet",
+  "format": "onnx",
+  "imgsz": 640,
+  "input": {
+    "name": "images",
+    "shape": [
+      1,
+      3,
+      640,
+      640
+    ],
+    "dtype": "float32"
+  },
+  "output": {
+    "name": "predictions",
+    "shape": [
+      1,
+      8400,
+      9
+    ],
+    "layout": "obj, cx, cy, w, h, class_logits..."
+  },
+  "strides": [
+    8,
+    16,
+    32
+  ],
+  "classes": [
+    "car",
+    "motorcycle",
+    "bus",
+    "truck"
+  ],
+  "nc": 4,
+  "opset": 12,
+  "dynamic": false,
+  "postprocess": "sigmoid + decode_predictions + NMS (Train/vtdnet/decode.py)",
+  "rockchip_notes": "Конвертация RKNN: статический вход 640. NMS рекомендуется на ARM CPU после NPU-инференса.",
+  "weights": "/workspace/Train/runs/vtdnet_quick/weights/best.pt"
+}

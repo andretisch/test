@@ -1,0 +1,20 @@
+{
+  "total_saved": 265,
+  "train": 212,
+  "val": 53,
+  "by_class": {
+    "car": 426,
+    "motorcycle": 0,
+    "bus": 20,
+    "truck": 148
+  },
+  "skipped_empty": 335,
+  "source": "/workspace/data/test_video_remote.mp4",
+  "model": "yolo11x.pt",
+  "class_names": [
+    "car",
+    "motorcycle",
+    "bus",
+    "truck"
+  ]
+}

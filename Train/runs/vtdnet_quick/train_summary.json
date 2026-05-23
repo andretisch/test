@@ -1,0 +1,18 @@
+{
+  "architecture": "VTDNet",
+  "description": "Anchor-free DW-CSP backbone + FPN, 3 scale heads",
+  "class_names": [
+    "car",
+    "motorcycle",
+    "bus",
+    "truck"
+  ],
+  "imgsz": 640,
+  "best_weights": "/workspace/Train/runs/vtdnet_quick/weights/best.pt",
+  "deploy": {
+    "onnx_input": "1x3x640x640",
+    "onnx_output": "1xNx(5+nc) raw logits",
+    "postprocess": "decode_predictions + NMS на CPU (см. Train/vtdnet/decode.py)",
+    "rockchip": "RKNN Toolkit, opset 12, static shape"
+  }
+}

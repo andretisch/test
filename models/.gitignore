@@ -1,4 +1,4 @@
-*.pt
-*.onnx
-*.meta.json
+*
 !.gitignore
+!vtdnet_640.onnx
+!vtdnet_640.meta.json

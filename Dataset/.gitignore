@@ -1,6 +1,4 @@
 # Сгенерированные данные (создаёт Train/create_dataset.py)
 images/
 labels/
-dataset_meta.json
-
-# data.yaml остаётся в репозитории после первого запуска — при желании добавьте в ignore
+build_frame5.log
