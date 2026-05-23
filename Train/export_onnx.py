@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Экспорт обученного YOLO в ONNX для Rockchip NPU (RKNN).
+Экспорт VTDNet в ONNX для Rockchip NPU (RKNN).
 
-Фиксированный вход 1x3x640x640, FP32, без dynamic axes и без встроенного NMS
-(NMS удобнее выполнять на CPU при конвертации в RKNN или в постобработке).
+Вход:  1×3×640×640
+Выход: 1×N×(5+nc) — сырые логиты; decode + NMS на CPU/хосте.
 """
 
 from __future__ import annotations
@@ -11,22 +11,45 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from dataclasses import asdict
 from pathlib import Path
+
+import torch
 
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-
-from ultralytics import YOLO
 
 from Train.constants import (
     CLASS_NAMES,
     DEFAULT_ONNX_PATH,
     IMGSZ,
     NUM_CLASSES,
-    ONNX_BATCH,
     ONNX_OPSET,
 )
+from Train.vtdnet.model import VTDNet, VTDNetConfig
+
+
+class VTDNetExportWrapper(torch.nn.Module):
+    def __init__(self, model: VTDNet) -> None:
+        super().__init__()
+        self.model = model
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.model.forward_export(x)
+
+
+def load_checkpoint(weights: Path, device: torch.device) -> tuple[VTDNet, VTDNetConfig]:
+    ckpt = torch.load(weights, map_location=device, weights_only=False)
+    cfg_dict = ckpt.get("cfg") or {"num_classes": NUM_CLASSES, "imgsz": IMGSZ}
+    cfg = VTDNetConfig(
+        num_classes=int(cfg_dict.get("num_classes", NUM_CLASSES)),
+        imgsz=int(cfg_dict.get("imgsz", IMGSZ)),
+    )
+    model = VTDNet(cfg)
+    model.load_state_dict(ckpt["model"])
+    model.eval()
+    return model, cfg
 
 
 def export_for_rockchip(
@@ -34,69 +57,63 @@ def export_for_rockchip(
     onnx_path: Path,
     imgsz: int = IMGSZ,
 ) -> Path:
-    weights = weights.resolve()
+    device = torch.device("cpu")
+    model, cfg = load_checkpoint(weights, device)
+    if cfg.imgsz != imgsz:
+        print(f"Предупреждение: checkpoint imgsz={cfg.imgsz}, экспорт imgsz={imgsz}")
+
+    wrapper = VTDNetExportWrapper(model).eval()
+    dummy = torch.randn(1, 3, imgsz, imgsz, device=device)
     onnx_path = onnx_path.resolve()
     onnx_path.parent.mkdir(parents=True, exist_ok=True)
 
-    model = YOLO(str(weights))
-    exported = model.export(
-        format="onnx",
-        imgsz=imgsz,
-        opset=ONNX_OPSET,
-        simplify=True,
-        dynamic=False,
-        half=False,
-        batch=ONNX_BATCH,
-        nms=False,
-        device="cpu",
-    )
+    with torch.no_grad():
+        torch.onnx.export(
+            wrapper,
+            dummy,
+            str(onnx_path),
+            input_names=["images"],
+            output_names=["predictions"],
+            opset_version=ONNX_OPSET,
+            do_constant_folding=True,
+            dynamic_axes=None,
+        )
 
-    exported_path = Path(exported)
-    if exported_path.resolve() != onnx_path.resolve():
-        onnx_path.write_bytes(exported_path.read_bytes())
-        if exported_path.parent.resolve() == Path.cwd().resolve():
-            exported_path.unlink(missing_ok=True)
+    n_cells = sum((imgsz // s) ** 2 for s in cfg.strides)
+    out_dim = 5 + cfg.num_classes
 
     meta = {
+        "architecture": "VTDNet",
         "format": "onnx",
         "imgsz": imgsz,
-        "batch": ONNX_BATCH,
-        "opset": ONNX_OPSET,
-        "nms": False,
-        "dynamic": False,
-        "half": False,
+        "input": {"name": "images", "shape": [1, 3, imgsz, imgsz], "dtype": "float32"},
+        "output": {
+            "name": "predictions",
+            "shape": [1, n_cells, out_dim],
+            "layout": "obj, cx, cy, w, h, class_logits...",
+        },
+        "strides": list(cfg.strides),
         "classes": CLASS_NAMES,
-        "nc": NUM_CLASSES,
-        "weights": str(weights),
-        "onnx": str(onnx_path),
+        "nc": cfg.num_classes,
+        "opset": ONNX_OPSET,
+        "dynamic": False,
+        "postprocess": "sigmoid + decode_predictions + NMS (Train/vtdnet/decode.py)",
         "rockchip_notes": (
-            "Конвертируйте в RKNN с тем же imgsz=640. "
-            "При необходимости квантуйте INT8 на репрезентативной выборке кадров."
+            "Конвертация RKNN: статический вход 640. "
+            "NMS рекомендуется на ARM CPU после NPU-инференса."
         ),
+        "weights": str(weights.resolve()),
     }
     meta_path = onnx_path.with_suffix(".meta.json")
-    meta_path.write_text(
-        json.dumps(meta, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
+    meta_path.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
     return onnx_path
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Экспорт YOLO → ONNX (Rockchip NPU).")
-    parser.add_argument(
-        "--weights",
-        type=Path,
-        required=True,
-        help="Путь к best.pt после обучения.",
-    )
-    parser.add_argument(
-        "--output",
-        type=Path,
-        default=DEFAULT_ONNX_PATH,
-        help=f"Куда сохранить ONNX (по умолчанию: {DEFAULT_ONNX_PATH}).",
-    )
-    parser.add_argument("--imgsz", type=int, default=IMGSZ, help="Сторона входа.")
+    parser = argparse.ArgumentParser(description="Экспорт VTDNet → ONNX (Rockchip).")
+    parser.add_argument("--weights", type=Path, required=True)
+    parser.add_argument("--output", type=Path, default=DEFAULT_ONNX_PATH)
+    parser.add_argument("--imgsz", type=int, default=IMGSZ)
     return parser.parse_args()
 
 

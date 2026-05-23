@@ -22,8 +22,12 @@ import yaml
 from ultralytics import YOLO
 
 ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from Train.constants import DEFAULT_LABEL_MODEL as DEFAULT_MODEL
+
 DEFAULT_DATASET_DIR = ROOT / "Dataset"
-DEFAULT_MODEL = "yolo11x.pt"
 
 # COCO -> индексы в нашем датасете (4 класса)
 COCO_TO_DATASET: dict[int, int] = {
