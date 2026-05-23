@@ -75,8 +75,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--frame-step",
         type=int,
-        default=30,
-        help="Брать каждый N-й кадр из видео (1 = все кадры).",
+        default=1,
+        help="Брать каждый N-й кадр из видео (1 = все кадры, без пропусков).",
     )
     parser.add_argument(
         "--val-ratio",
@@ -341,6 +341,9 @@ def main() -> None:
     yaml_path = write_data_yaml(dataset_dir)
     stats = save_split(labeled, dataset_dir, args.val_ratio, args.seed)
     stats["skipped_empty"] = skipped_empty
+    stats["frames_processed"] = len(raw_samples)
+    stats["frame_step"] = args.frame_step
+    stats["imgsz"] = args.imgsz
     stats["source"] = str(source.resolve())
     stats["model"] = args.model
     stats["class_names"] = CLASS_NAMES

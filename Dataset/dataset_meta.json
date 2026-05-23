@@ -1,14 +1,17 @@
 {
-  "total_saved": 265,
-  "train": 212,
-  "val": 53,
+  "total_saved": 1328,
+  "train": 1063,
+  "val": 265,
   "by_class": {
-    "car": 426,
+    "car": 2180,
     "motorcycle": 0,
-    "bus": 20,
-    "truck": 148
+    "bus": 111,
+    "truck": 722
   },
-  "skipped_empty": 335,
+  "skipped_empty": 1672,
+  "frames_processed": 3000,
+  "frame_step": 1,
+  "imgsz": 640,
   "source": "/workspace/data/test_video_remote.mp4",
   "model": "yolo11x.pt",
   "class_names": [
