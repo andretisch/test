@@ -1,4 +1,4 @@
-path: /workspace/Dataset
+path: ./
 train: images/train
 val: images/val
 names:
